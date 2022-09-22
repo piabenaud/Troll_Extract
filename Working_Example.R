@@ -8,39 +8,32 @@
  # only use as needed
 #install.packages("pacman")
 
-# Import function ---------------------------------------------------------
+# Import functions --------------------------------------------------------
 
-source("Troll_Extract_Function.R")
-
-# Baro calibration offsets ------------------------------------------------
-
-# corrections based on calibration certificate
-corrections <- tibble(location = c("PS1", "PH3", "PC5", "PM7"),
-                      correction = as.numeric(c("97.00", "96.97", "96.97", "97.02")))
-
-# might not be needed across the board, but going to keep it as input for now as we did calibrate the level sensor on deployment ::eyeroll::
-# if you didn't, just use your location names and put NA as values...
-
-# Level offsets -----------------------------------------------------------
-
-# to do, don't currently have the data, will need to add it to final calcs when we do
+source("Troll_Functions.R")
 
 
-# Run the function --------------------------------------------------------
- # note: Extract folders don't have to exist
+# Extract and baro correct ------------------------------------------------
 
 Priddo_level <- Troll_Extract(Baro_folder = "Example_data/Zip/Baro", 
                               Level_folder = "Example_data/Zip/Level",
-                              corrections = corrections)
+                              corrections_csv = "Example_data/priddo_corrections.csv")
+
+
+# Calculate WTD -----------------------------------------------------------
+
+Priddo_WTD <- Calc_WTD(the_data = Priddo_level,
+                       corrections_csv = "Example_data/priddo_corrections.csv")
 
 
 # Why not plot? -----------------------------------------------------------
 
-Priddo_level %>% 
+Priddo_WTD %>% 
   ggplot() +
   geom_hline(yintercept = 0, size = 0.5, colour = "gray20", linetype = "dotted") +
-  geom_path(aes(x = datetime, y = level_m, group = location, colour = location)) +
+  geom_line(aes(x = datetime, y = WTD_m, group = location, colour = location)) +
   scale_colour_viridis_d()+
-  labs(x = "Date Time", y = "Level (m)", colour = "Location") +
+  scale_y_reverse() + # y axis reversed to help with realistic visualisation
+  labs(x = "Date Time", y = "Water Table Depth (m)", colour = "Location") +
   theme_classic() +
   theme(legend.position = "top")
