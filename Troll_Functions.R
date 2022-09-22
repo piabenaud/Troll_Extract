@@ -67,6 +67,7 @@ Troll_Extract <- function(Baro_folder, Level_folder, corrections_csv){
       clean_names(.) %>% 
       rename_with(., .cols = !1, ~str_sub(., end=-8)) %>%  # remove serial number off end - alternative could be to base this all on the serial number?
       select(1:3) %>%  # dropping level off the level trolls as it isn't correct/useful
+      slice(1:(n()-3)) %>% # removing last three rows as sometimes logger flags rather than data
       mutate(date_time = ymd_hms(date_time),
              serial_number = SN, .before = 2) %>% 
       mutate(across(.cols = 2:3, as.numeric))

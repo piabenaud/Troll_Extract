@@ -8,7 +8,7 @@ Level_data <- Troll_Extract(Baro_folder = "Example_data/Zip/Baro",
                               corrections_csv = "Example_data/priddo_corrections.csv")
 ```
 
-Calculate the Water Table Depth using the corrected data
+Calculate the Water Table Depth using the corrected data. Note: this may remove the last three datapoints from each file, as when the loggers are stopped, a flag is added to the bottom of the csv... which is kind of annoying and messes up the whole function... so being lazy, I've just default assumed it's there and that others will download an overlap of data worse case / downloading normally results in some data loss anyway.
 
 ```
 WTD_data <- Calc_WTD(the_data = Level_data,
