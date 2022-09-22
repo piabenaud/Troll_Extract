@@ -1,0 +1,5 @@
+﻿location,serial_number,baro_correction,m_to_sensor,m_to_soil,peat_depth
+PS1,818270,97,0.385,0.24,0.16
+PH3,814486,96.97,0.687,0.28,0.42
+PC5,812279,96.97,0.39,0.22,0.18
+PM7,814459,97.02,0.578,0.21,0.39
