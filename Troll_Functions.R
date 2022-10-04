@@ -21,7 +21,7 @@ Troll_Extract <- function(Baro_folder, Level_folder, corrections_csv){
   
   # Read in the corrections csv ---------------------------------------------
   
-  corrections <- read_csv(corrections_csv)
+  corrections <- read_csv(corrections_csv, show_col_types = FALSE)
   
   # Read in the html tables -------------------------------------------------
   
@@ -79,6 +79,8 @@ Troll_Extract <- function(Baro_folder, Level_folder, corrections_csv){
   
   # Make continuous 15 min col ----------------------------------------------
   
+  # I need to add some text here explaining why ths is necessary... and comment the script!
+  
   round_15 <- function(the_data){
     the_data %>% 
       split(., names(.)) %>% # these two rows are pulling together list elements with the same name
@@ -132,12 +134,13 @@ Troll_Extract <- function(Baro_folder, Level_folder, corrections_csv){
                 location = location.x, # location id
                 level_m = level,
                 air_temp_c = temperature_c.y, # baro temp
-                sensor_temp_c = temperature_c.x)
+                sensor_temp_c = temperature_c.x) %>% 
+      arrange(location, serial_number, datetime)
     
   }
   
   the_output <- get_level(Baro_data, Level_data)
-
+  
   
 }
 
@@ -146,14 +149,27 @@ Troll_Extract <- function(Baro_folder, Level_folder, corrections_csv){
 
 Calc_WTD <- function(the_data, corrections_csv){
   
-    corrections <- read_csv(corrections_csv)
+  corrections <- read_csv(corrections_csv, show_col_types = FALSE)
+  
+  out <- left_join(the_data, corrections, by = c("location", "serial_number")) %>% 
+    mutate(WTD_m = m_to_sensor - (m_to_soil + level_m) - fudge_factor, .after = 6,
+           max_WTD_m = m_to_sensor - m_to_soil) %>% # might be useful for plotting
+    select(-c(baro_correction, m_to_sensor, m_to_soil, peat_depth))
+  
+}
 
-    out <- left_join(the_data, corrections, by = c("location", "serial_number")) %>% 
-      mutate(WTD_m = m_to_sensor - (m_to_soil + level_m), .after = 6) %>% 
-      select(-c(baro_correction, m_to_sensor, m_to_soil, peat_depth))
-    
-  }
 
 
+# Function to calculate rolling median ------------------------------------
+
+WTD_Roll_Med <- function(the_data, the_group, interval){
+  
+  the_data %>% 
+    group_by({{the_group}}) %>%
+    group_split() %>% 
+    map(., ~ mutate(., rm_WTD_m = RcppRoll::roll_median(WTD_m, n = interval, fill = NA))) %>% 
+    bind_rows()
+  
+}
 
 
